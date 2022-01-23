@@ -1,7 +1,6 @@
 name: Docker calico/cni
 concurrency: 
   group: docker-cni-${{ github.head_ref }}
-  cancel-in-progress: true
 
 on:
   workflow_dispatch:  # Allow manual triggers

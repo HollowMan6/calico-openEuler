@@ -1,7 +1,6 @@
 name: Docker calico/pod2daemon-flexvol
 concurrency: 
   group: docker-pod2daemon-flexvol-${{ github.head_ref }}
-  cancel-in-progress: true
 
 on:
   workflow_dispatch:  # Allow manual triggers

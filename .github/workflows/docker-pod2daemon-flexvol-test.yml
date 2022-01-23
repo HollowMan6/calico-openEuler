@@ -1,0 +1,54 @@
+name: Docker calico/pod2daemon-flexvol Test
+concurrency: 
+  group: docker-pod2daemon-flexvol-test-${{ github.head_ref }}
+
+on:
+  workflow_dispatch:  # Allow manual triggers
+    inputs:
+      tags:
+        description: 'Tags'
+        required: false
+  push:
+    # Publish `main` as Docker `latest` image.
+    branches:
+      - main
+
+    # Publish `v1.2.3` tags as releases.
+    tags:
+      - v*
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@master
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@master
+
+      - name: Pull from upstream
+        run: |
+          git clone https://github.com/projectcalico/calico
+          if [ ! -z "${{ github.event.inputs.tags }}" ]; then
+            cd calico; git reset --hard ${{ github.event.inputs.tags }}; cd ..;
+          fi
+          rm -rf calico/pod2daemon/Dockerfile.*
+          cp -arf pod2daemon/* calico/pod2daemon/
+          sed -i 's/docker build/docker buildx build --platform $(ARCH) --output type=docker/g' calico/pod2daemon/Makefile
+
+      - name: Test calico-pod2daemon-flexvol-openeuler image
+        run: |
+          cd calico/pod2daemon
+          make ci
+
+      - name: Upload Test Report to Artifact
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: calico-pod2daemon-flexvol-openeuler_test_report
+          path: calico/pod2daemon/report/*

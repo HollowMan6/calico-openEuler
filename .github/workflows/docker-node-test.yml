@@ -1,0 +1,55 @@
+name: Docker calico/node Test
+concurrency: 
+  group: docker-node-test-${{ github.head_ref }}
+
+on:
+  workflow_dispatch:  # Allow manual triggers
+    inputs:
+      tags:
+        description: 'Tags'
+        required: false
+  push:
+    # Publish `main` as Docker `latest` image.
+    branches:
+      - main
+
+    # Publish `v1.2.3` tags as releases.
+    tags:
+      - v*
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@master
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@master
+
+      - name: Pull from upstream
+        run: |
+          git clone https://github.com/projectcalico/calico
+          if [ ! -z "${{ github.event.inputs.tags }}" ]; then
+            cd calico; git reset --hard ${{ github.event.inputs.tags }}; cd ..;
+          fi
+          rm -rf calico/node/Dockerfile.*
+          cp -arf node/* calico/node/
+          sed -i 's#TARGET_PLATFORM=--platform=linux/arm64/v8#TARGET_PLATFORM=--platform=arm64#g' calico/node/Makefile
+          sed -i 's/docker build --pull/docker buildx build --output type=docker/g' calico/node/Makefile
+
+      - name: Test calico-node-openeuler image
+        run: |
+          cd calico/node
+          make ci
+
+      - name: Upload Test Report to Artifact
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: calico-node-openeuler_test_report
+          path: calico/node/report/*

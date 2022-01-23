@@ -1,0 +1,54 @@
+name: Docker calico/cni Test
+concurrency: 
+  group: docker-cni-test-${{ github.head_ref }}
+
+on:
+  workflow_dispatch:  # Allow manual triggers
+    inputs:
+      tags:
+        description: 'Tags'
+        required: false
+  push:
+    # Publish `main` as Docker `latest` image.
+    branches:
+      - main
+
+    # Publish `v1.2.3` tags as releases.
+    tags:
+      - v*
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@master
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@master
+
+      - name: Pull from upstream
+        run: |
+          git clone https://github.com/projectcalico/calico
+          if [ ! -z "${{ github.event.inputs.tags }}" ]; then
+            cd calico; git reset --hard ${{ github.event.inputs.tags }}; cd ..;
+          fi
+          rm -rf calico/cni-plugin/Dockerfile.*
+          cp -arf cni-plugin/* calico/cni-plugin/
+          sed -i 's/docker build/docker buildx build --platform $(ARCH) --output type=docker/g' calico/cni-plugin/Makefile
+
+      - name: Test calico-cni-openeuler image
+        run: |
+          cd calico/cni-plugin
+          make ci
+
+      - name: Upload Test Report to Artifact
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: calico-cni-openeuler_test_report
+          path: calico/cni-plugin/report/*

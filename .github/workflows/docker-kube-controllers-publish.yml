@@ -1,7 +1,6 @@
 name: Docker calico/kube-controllers
 concurrency: 
   group: docker-kube-controllers-${{ github.head_ref }}
-  cancel-in-progress: true
 
 on:
   workflow_dispatch:  # Allow manual triggers
