@@ -65,7 +65,12 @@ jobs:
           make image
           docker tag calico/node:latest $IMAGE_ID:${VERSION}-amd64
           docker push $IMAGE_ID:${VERSION}-amd64
-  
+      - name: Upload Build Dir to Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: calico_node_amd64
+          path: calico/node/*
+
   build-arm64:
     runs-on: ubuntu-latest
     steps:
@@ -114,6 +119,11 @@ jobs:
           make sub-image-arm64
           docker tag calico/node:latest-arm64 $IMAGE_ID:${VERSION}-arm64
           docker push $IMAGE_ID:${VERSION}-arm64
+      - name: Upload Build Dir to Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: calico_node_arm64
+          path: calico/node/*
 
   merge:
     runs-on: ubuntu-latest

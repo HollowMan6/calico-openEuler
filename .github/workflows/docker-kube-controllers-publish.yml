@@ -63,6 +63,11 @@ jobs:
           make image
           docker tag calico/kube-controllers:latest $IMAGE_ID:${VERSION}-amd64
           docker push $IMAGE_ID:${VERSION}-amd64
+      - name: Upload Build Dir to Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: calico_kube-controllers_amd64
+          path: calico/kube-controllers/*
   
   build-arm64:
     runs-on: ubuntu-latest
@@ -111,6 +116,11 @@ jobs:
           make sub-image-arm64
           docker tag calico/kube-controllers:latest-arm64 $IMAGE_ID:${VERSION}-arm64
           docker push $IMAGE_ID:${VERSION}-arm64
+      - name: Upload Build Dir to Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: calico_kube-controllers_arm64
+          path: calico/kube-controllers/*
 
   merge:
     runs-on: ubuntu-latest
