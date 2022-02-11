@@ -1,0 +1,29 @@
+name: Upstream Test
+concurrency: 
+  group: upstream-test-${{ github.head_ref }}
+
+on:
+  workflow_dispatch:  # Allow manual triggers
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull from upstream
+        run: |
+          git clone https://gitee.com/jiangsonglin2/openeuler-docker-images
+
+      - name: Log into Docker Hub
+        run: echo ${{ secrets.DOCKERHUB_PW }} | docker login $SITE -u ${{ secrets.DOCKERHUB_UN }} --password-stdin
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@master
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@master
+
+      - name: Build and Push to Docker Hub
+        run: |
+          cd openeuler-docker-images/calico;
+          ./build.sh;
