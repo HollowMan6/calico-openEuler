@@ -29,8 +29,6 @@ FROM openeuler/openeuler:21.09 as openeuler
 ARG ARCH
 ARG RUNIT_VER
 
-RUN sed -i 's#/EPOL#/EPOL/main#g' /etc/yum.repos.d/openEuler.repo
-
 # Install build dependencies and security updates.
 RUN dnf install -y 'dnf-command(config-manager)' && \
     # Install required packages for building rpms. yum-utils is not required but it gives us yum-builddep to easily install build deps.
@@ -50,8 +48,6 @@ FROM openeuler/openeuler:21.09 as base
 ARG ARCH
 ARG GIT_VERSION
 ARG RUNIT_VER
-
-RUN sed -i 's#/EPOL#/EPOL/main#g' /etc/yum.repos.d/openEuler.repo
 
 # Update base packages to pick up security updates.  Must do this before adding the centos repo.
 RUN yum update -y

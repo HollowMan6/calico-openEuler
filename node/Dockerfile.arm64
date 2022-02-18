@@ -34,8 +34,6 @@ COPY --from=qemu /usr/bin/qemu-*-static /usr/bin/
 ARG ARCH
 ARG RUNIT_VER
 
-RUN sed -i 's#/EPOL#/EPOL/main#g' /etc/yum.repos.d/openEuler.repo
-
 # Install build dependencies and security updates.
 RUN dnf install -y 'dnf-command(config-manager)' && \
     # Enable PowerTools repo for '-devel' packages
@@ -62,8 +60,6 @@ FROM openeuler/openeuler:21.09 as base
 ARG ARCH
 ARG GIT_VERSION
 ARG RUNIT_VER
-
-RUN sed -i 's#/EPOL#/EPOL/main#g' /etc/yum.repos.d/openEuler.repo
 
 # Enable non-native builds of this image on an amd64 hosts.
 # This must be the first RUN command in this file!

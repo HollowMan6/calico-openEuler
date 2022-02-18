@@ -24,8 +24,6 @@ RUN touch /in-the-container
 RUN mkdir /licenses
 COPY LICENSE /licenses
 
-RUN sed -i 's#/EPOL#/EPOL/main#g' /etc/yum.repos.d/openEuler.repo
-
 RUN yum update -y
 
 SHELL ["/bin/bash", "-c"]
